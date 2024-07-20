@@ -32,7 +32,6 @@ export const NOTIFICATIONS_EXPAND_FAIL    = 'NOTIFICATIONS_EXPAND_FAIL';
 
 export const NOTIFICATIONS_FILTER_SET = 'NOTIFICATIONS_FILTER_SET';
 
-export const NOTIFICATIONS_CLEAR        = 'NOTIFICATIONS_CLEAR';
 export const NOTIFICATIONS_SCROLL_TOP   = 'NOTIFICATIONS_SCROLL_TOP';
 export const NOTIFICATIONS_LOAD_PENDING = 'NOTIFICATIONS_LOAD_PENDING';
 
@@ -43,10 +42,6 @@ export const NOTIFICATIONS_MARK_AS_READ = 'NOTIFICATIONS_MARK_AS_READ';
 
 export const NOTIFICATIONS_SET_BROWSER_SUPPORT    = 'NOTIFICATIONS_SET_BROWSER_SUPPORT';
 export const NOTIFICATIONS_SET_BROWSER_PERMISSION = 'NOTIFICATIONS_SET_BROWSER_PERMISSION';
-
-export const NOTIFICATION_POLICY_FETCH_REQUEST = 'NOTIFICATION_POLICY_FETCH_REQUEST';
-export const NOTIFICATION_POLICY_FETCH_SUCCESS = 'NOTIFICATION_POLICY_FETCH_SUCCESS';
-export const NOTIFICATION_POLICY_FETCH_FAIL    = 'NOTIFICATION_POLICY_FETCH_FAIL';
 
 export const NOTIFICATION_REQUESTS_FETCH_REQUEST = 'NOTIFICATION_REQUESTS_FETCH_REQUEST';
 export const NOTIFICATION_REQUESTS_FETCH_SUCCESS = 'NOTIFICATION_REQUESTS_FETCH_SUCCESS';
@@ -178,7 +173,7 @@ const noOp = () => {};
 
 let expandNotificationsController = new AbortController();
 
-export function expandNotifications({ maxId, forceLoad } = {}, done = noOp) {
+export function expandNotifications({ maxId, forceLoad = false } = {}, done = noOp) {
   return (dispatch, getState) => {
     const activeFilter = getState().getIn(['settings', 'notifications', 'quickFilter', 'active']);
     const notifications = getState().get('notifications');
@@ -261,16 +256,6 @@ export function expandNotificationsFail(error, isLoadingMore) {
   };
 }
 
-export function clearNotifications() {
-  return (dispatch) => {
-    dispatch({
-      type: NOTIFICATIONS_CLEAR,
-    });
-
-    api().post('/api/v1/notifications/clear');
-  };
-}
-
 export function scrollTopNotifications(top) {
   return {
     type: NOTIFICATIONS_SCROLL_TOP,
@@ -345,40 +330,6 @@ export function setBrowserPermission (value) {
     value,
   };
 }
-
-export const fetchNotificationPolicy = () => (dispatch) => {
-  dispatch(fetchNotificationPolicyRequest());
-
-  api().get('/api/v1/notifications/policy').then(({ data }) => {
-    dispatch(fetchNotificationPolicySuccess(data));
-  }).catch(err => {
-    dispatch(fetchNotificationPolicyFail(err));
-  });
-};
-
-export const fetchNotificationPolicyRequest = () => ({
-  type: NOTIFICATION_POLICY_FETCH_REQUEST,
-});
-
-export const fetchNotificationPolicySuccess = policy => ({
-  type: NOTIFICATION_POLICY_FETCH_SUCCESS,
-  policy,
-});
-
-export const fetchNotificationPolicyFail = error => ({
-  type: NOTIFICATION_POLICY_FETCH_FAIL,
-  error,
-});
-
-export const updateNotificationsPolicy = params => (dispatch) => {
-  dispatch(fetchNotificationPolicyRequest());
-
-  api().put('/api/v1/notifications/policy', params).then(({ data }) => {
-    dispatch(fetchNotificationPolicySuccess(data));
-  }).catch(err => {
-    dispatch(fetchNotificationPolicyFail(err));
-  });
-};
 
 export const fetchNotificationRequests = () => (dispatch, getState) => {
   const params = {};
